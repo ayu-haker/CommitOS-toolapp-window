@@ -17,9 +17,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Non-blocking on purpose. The identifier below belongs to the upstream
+      # project, and winget-pkgs only accepts updates for packages it already
+      # tracks - so this submit can never succeed from this fork. Publishing
+      # this fork to WinGet means opening a PR against winget-pkgs under a new
+      # package identifier, after which a token with write access there is
+      # needed. Until then this step reports the reason instead of turning every
+      # release red.
       - name: Submit package to Windows Package Manager Community Repository
+        continue-on-error: true
         uses: vedantmgoyal2009/winget-releaser@v2
         with:
           identifier: NotHarshhaa.DevOpsToolsInstaller
-          installers-regex: 'DevOpsToolsInstaller_x64_Setup\.exe$'
-          token: ${{ secrets.WINGET_TOKEN || secrets.GH_TOKEN }}
+          # Matches the versioned installer name, e.g.
+          # DevOpsToolsInstaller_v2.9.0_x64_Setup.exe
+          installers-regex: 'DevOpsToolsInstaller_v.*_x64_Setup\.exe$'
+          token: ${{ secrets.WINGET_TOKEN || secrets.GITHUB_TOKEN }}
