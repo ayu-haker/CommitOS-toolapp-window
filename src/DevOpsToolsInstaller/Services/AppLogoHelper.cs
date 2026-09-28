@@ -39,6 +39,8 @@ public static class AppLogoHelper
         }
         catch { }
 
-        return new BitmapImage(new Uri("https://avatars.githubusercontent.com/u/112948305?v=4"));
+        // No bundled portrait. Fall back to this fork maintainer's avatar rather
+        // than the original author's.
+        return new BitmapImage(new Uri("https://avatars.githubusercontent.com/u/ayu-haker?v=4"));
     }
 }

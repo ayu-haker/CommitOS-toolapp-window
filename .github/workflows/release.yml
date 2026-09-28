@@ -67,7 +67,13 @@ jobs:
           if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
           New-Item -ItemType Directory -Path $staging | Out-Null
           Copy-Item -Path "publish_out\*" -Destination $staging -Recurse -Force
-          Compress-Archive -Path "$staging\*" -DestinationPath "publish_out\DevOpsToolsInstaller_v${ver}_${{ matrix.arch_name }}_portable.zip" -CompressionLevel Optimal
+          # -Force is required: without it Compress-Archive fails on an existing
+          # archive and silently leaves the previous one in place.
+          Compress-Archive -Path "$staging\*" -DestinationPath "publish_out\DevOpsToolsInstaller_v${ver}_${{ matrix.arch_name }}_portable.zip" -CompressionLevel Optimal -Force -ErrorAction Stop
+          if (-not (Test-Path "publish_out\DevOpsToolsInstaller_v${ver}_${{ matrix.arch_name }}_portable.zip")) {
+            Write-Host "Portable zip was not created." -ForegroundColor Red
+            exit 1
+          }
           Remove-Item $staging -Recurse -Force
 
       - name: Build Windows Setup Wizard
