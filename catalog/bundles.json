@@ -94,5 +94,13 @@
     "description": "Tools for tunneling, zero-trust networking, and service mesh management",
     "icon": "\uE774",
     "tools": ["ngrok", "cloudflared", "linkerd", "istioctl", "cilium-cli"]
+  },
+  {
+    "id": "android-sideload-kit",
+    "name": "Android Sideload Kit",
+    "category": "Mobile & Android",
+    "description": "Everything needed to sideload APKs: adb for installing and scrcpy for mirroring a device",
+    "icon": "",
+    "tools": ["adb", "scrcpy"]
   }
 ]

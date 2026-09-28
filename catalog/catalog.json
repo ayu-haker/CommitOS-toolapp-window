@@ -1518,5 +1518,41 @@
     "fileName": "WezTerm-windows.zip",
     "sha256": "",
     "launchArgs": ""
+  },
+  {
+    "id": "adb",
+    "name": "Android Debug Bridge (adb)",
+    "category": "Mobile & Android",
+    "description": "Android Debug Bridge for installing APKs and talking to connected devices",
+    "iconGlyph": "",
+    "logoUrl": "",
+    "kind": "archive",
+    "version": "37.0.1",
+    "homepage": "https://developer.android.com/tools/releases/platform-tools",
+    "downloadUrl": "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
+    "fileName": "platform-tools-latest-windows.zip",
+    "sha256": "",
+    "launchArgs": "",
+    "previousVersions": [
+      "37.0.1"
+    ]
+  },
+  {
+    "id": "scrcpy",
+    "name": "scrcpy",
+    "category": "Mobile & Android",
+    "description": "Mirror and control an Android device from this PC over USB",
+    "iconGlyph": "",
+    "logoUrl": "",
+    "kind": "archive",
+    "version": "4.1",
+    "homepage": "https://github.com/Genymobile/scrcpy",
+    "downloadUrl": "https://github.com/Genymobile/scrcpy/releases/download/v4.1/scrcpy-win64-v4.1.zip",
+    "fileName": "scrcpy-win64-v4.1.zip",
+    "sha256": "",
+    "launchArgs": "",
+    "previousVersions": [
+      "4.1"
+    ]
   }
 ]

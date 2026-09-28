@@ -113,6 +113,7 @@
                     <Button Content="Terminal"          Tag="Terminal"         Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                     <Button Content="Workstation"       Tag="Workstation"      Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                     <Button Content="Networking"        Tag="Networking"       Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
+                    <Button Content="Mobile &amp; Android" Tag="Mobile &amp; Android" Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                 </StackPanel>
             </ScrollViewer>
 

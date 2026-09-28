@@ -227,6 +227,7 @@
                     <Button Content="Database &amp; Data"        Tag="Database &amp; Data"          Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                     <Button Content="Editors &amp; Terminals"    Tag="Editors &amp; Terminals"      Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                     <Button Content="Utilities"                  Tag="Utilities"                    Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
+                    <Button Content="Mobile &amp; Android"       Tag="Mobile &amp; Android"         Click="CategoryChip_Click" Style="{StaticResource CategoryChipStyle}" />
                 </StackPanel>
             </ScrollViewer>
 

@@ -77,6 +77,11 @@
                         <FontIcon Glyph="&#xE896;" />
                     </controls:NavigationViewItem.Icon>
                 </controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="Sideload" Tag="Sideload">
+                    <controls:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE717;" />
+                    </controls:NavigationViewItem.Icon>
+                </controls:NavigationViewItem>
             </controls:NavigationView.MenuItems>
 
             <controls:NavigationView.FooterMenuItems>

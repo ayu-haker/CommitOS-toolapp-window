@@ -7,19 +7,18 @@ namespace DevOpsToolsInstaller.Services;
 
 public sealed class CatalogService
 {
-    // Candidate remote locations, most-preferred first. The upstream default
-    // branch has been both "main" and "master" over this project's life, so
-    // every branch is tried before giving up and using the embedded copy.
+    // This fork publishes its own signed catalog from the "main" branch of
+    // ayu-haker/CommitOS-toolapp-window. Upstream is intentionally not listed:
+    // its catalog is signed with a different key, so it could never pass the
+    // pinned-key check and would only add pointless network round-trips.
     private static readonly string[] RemoteCatalogUrls =
     {
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/catalog.json",
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/master/catalog/catalog.json"
+        "https://raw.githubusercontent.com/ayu-haker/CommitOS-toolapp-window/main/catalog/catalog.json"
     };
 
     private static readonly string[] RemoteBundlesUrls =
     {
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/bundles.json",
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/master/catalog/bundles.json"
+        "https://raw.githubusercontent.com/ayu-haker/CommitOS-toolapp-window/main/catalog/bundles.json"
     };
 
     private static readonly JsonSerializerOptions JsonOptions = new()

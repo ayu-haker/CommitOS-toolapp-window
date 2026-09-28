@@ -1,0 +1,5 @@
+# The catalog is signed with ECDSA over its exact bytes, so the line endings
+# committed here must stay LF. A CRLF checkout would fail signature
+# verification and silently fall back to the built-in catalog.
+catalog/*.json text eol=lf
+catalog/*.sig text eol=lf

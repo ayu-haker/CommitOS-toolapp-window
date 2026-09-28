@@ -1,0 +1,195 @@
+<Page
+    x:Class="DevOpsToolsInstaller.Views.SideloadPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer Padding="32,20,32,24" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16">
+
+            <!-- ══════════════════════════════════ -->
+            <!--  HEADER                            -->
+            <!-- ══════════════════════════════════ -->
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="Sideload" Style="{StaticResource PageTitleStyle}" />
+                    <Border Style="{StaticResource BadgeStyle}" VerticalAlignment="Center">
+                        <TextBlock x:Name="HeaderBadge" Text="APK &amp; Installer"
+                                   FontSize="11"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Push an APK to a connected Android device, or verify and launch a local installer you already have."
+                           Style="{StaticResource PageSubtitleStyle}" />
+            </StackPanel>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ══════════════════════════════ -->
+                <!--  ANDROID APK                  -->
+                <!-- ══════════════════════════════ -->
+                <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}" Padding="20">
+                    <StackPanel Spacing="12">
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE717;" FontSize="15" VerticalAlignment="Center" />
+                            <TextBlock Text="Android APK" Style="{StaticResource CardTitleStyle}" />
+                        </StackPanel>
+
+                        <!-- adb status -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="12,10">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Name="AdbStatusText" Text="Looking for adb…"
+                                           FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock x:Name="AdbPathText" Text=""
+                                           FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <HyperlinkButton x:Name="GetAdbButton"
+                                                 Content="Install adb from the catalog"
+                                                 Click="GetAdb_Click"
+                                                 Padding="0" Visibility="Collapsed"
+                                                 HorizontalAlignment="Left"
+                                                 FontSize="12" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- device selector -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Target device" Style="{StaticResource SectionHeaderStyle}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="DevicePicker" Grid.Column="0"
+                                          HorizontalAlignment="Stretch"
+                                          PlaceholderText="No device selected"
+                                          SelectionChanged="DevicePicker_SelectionChanged" />
+                                <Button Grid.Column="1" Click="RefreshDevices_Click"
+                                        CornerRadius="4" Padding="12,7"
+                                        ToolTipService.ToolTip="Re-scan for devices">
+                                    <FontIcon Glyph="&#xE72C;" FontSize="13" />
+                                </Button>
+                            </Grid>
+                            <TextBlock x:Name="DeviceStateText" Text=""
+                                       FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <!-- apk picker -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="APK file" Style="{StaticResource SectionHeaderStyle}" />
+                            <Button Click="PickApk_Click" HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left" Padding="12,8" CornerRadius="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE8E5;" FontSize="13" />
+                                    <TextBlock Text="Choose an .apk…" FontSize="12" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock x:Name="ApkNameText" Text="No APK selected"
+                                       FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="ApkMetaText" Text=""
+                                       FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="AllowDowngradeCheck" Content="Allow downgrade (replace with an older build)"
+                                  FontSize="12" />
+                        <CheckBox x:Name="GrantPermissionsCheck" Content="Grant all runtime permissions (-g)"
+                                  FontSize="12" />
+
+                        <Button x:Name="InstallApkButton" Click="InstallApk_Click"
+                                HorizontalAlignment="Stretch" CornerRadius="4" Padding="12,9"
+                                IsEnabled="False">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="13" />
+                                <TextBlock Text="Install to device" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="10,8"
+                                Visibility="Collapsed" x:Name="ApkOutputBorder">
+                            <TextBlock x:Name="ApkOutputText" Text="" FontSize="11"
+                                       TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ══════════════════════════════ -->
+                <!--  LOCAL INSTALLER              -->
+                <!-- ══════════════════════════════ -->
+                <Border Grid.Column="1" Style="{StaticResource GlassCardStyle}" Padding="20">
+                    <StackPanel Spacing="12">
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE7C3;" FontSize="15" VerticalAlignment="Center" />
+                            <TextBlock Text="Local installer" Style="{StaticResource CardTitleStyle}" />
+                        </StackPanel>
+
+                        <TextBlock Text="Run an .exe or .msi already on this PC. Its Authenticode signature and SHA-256 are checked against your security policy first."
+                                   FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                        <Button Click="PickInstaller_Click" HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left" Padding="12,8" CornerRadius="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8E5;" FontSize="13" />
+                                <TextBlock Text="Choose an .exe or .msi…" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock x:Name="InstallerNameText" Text="No installer selected"
+                                   FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="InstallerSizeText" Text=""
+                                   FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="InstallerHashText" Text=""
+                                   FontSize="11" TextWrapping="Wrap" FontFamily="Consolas"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="InstallerPathText" Text=""
+                                   FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                        <Border x:Name="SignatureBadgeBorder" Style="{StaticResource BadgeStyle}"
+                                HorizontalAlignment="Left" Visibility="Collapsed">
+                            <TextBlock x:Name="SignatureBadgeText" Text="" FontSize="11" />
+                        </Border>
+
+                        <Button x:Name="RunInstallerButton" Click="RunInstaller_Click"
+                                HorizontalAlignment="Stretch" CornerRadius="4" Padding="12,9"
+                                IsEnabled="False">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE768;" FontSize="13" />
+                                <TextBlock Text="Verify and launch" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="10,8"
+                                Visibility="Collapsed" x:Name="InstallerOutputBorder">
+                            <TextBlock x:Name="InstallerOutputText" Text="" FontSize="11"
+                                       TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                        </Border>
+
+                        <TextBlock x:Name="PolicyHintText" Text=""
+                                   FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock x:Name="StatusText" Text=""
+                       FontSize="11" TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -19,8 +19,8 @@ public static class CatalogSignatureService
     private const string PinnedPublicKey =
         """
         -----BEGIN PUBLIC KEY-----
-        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMKk7Ymmg4o37k3bib5WX3GPuN77X
-        hBUXh4u3r+cRgYT8qpZYCowQiS8VvKnZw3sl5Dt5W0/eGDljkDOCD9Rs+A==
+        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHWfTH7mcbZnlxSZLAo/OrMhf4L+r
+        ZS8uH1XgF4oypDoY3zGh463OqZ5OAclxTr+VU7RX0wG/uK0pH8AdItRpZA==
         -----END PUBLIC KEY-----
         """;
 

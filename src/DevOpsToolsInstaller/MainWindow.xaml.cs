@@ -290,6 +290,7 @@ public sealed partial class MainWindow : Window
             "Catalog"   => typeof(CatalogPage),
             "Stacks"    => typeof(StacksPage),
             "Downloads" => typeof(DownloadsPage),
+            "Sideload"  => typeof(SideloadPage),
             "Installed" => typeof(InstalledPage),
             "Settings"  => typeof(SettingsPage),
             "About"     => typeof(AboutPage),
