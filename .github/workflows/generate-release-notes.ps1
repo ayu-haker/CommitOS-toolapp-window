@@ -4,119 +4,139 @@ param(
     [string]$OutputFile = "release_notes.md"
 )
 
-$setupHash = "N/A"
-$msiHash = "N/A"
-$x64Hash = "N/A"
-$arm64Hash = "N/A"
+$ErrorActionPreference = "Stop"
 
-$setupFile = Get-ChildItem -Path "$AssetsDir" -Filter "*Setup*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($setupFile) {
-    $setupHash = (Get-FileHash -Path $setupFile.FullName -Algorithm SHA256).Hash.ToLower()
+function Get-AssetHash {
+    param([string]$Pattern)
+    $f = Get-ChildItem -Path $AssetsDir -Filter $Pattern -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($f) { return (Get-FileHash -Path $f.FullName -Algorithm SHA256).Hash.ToLower() }
+    return "N/A"
 }
-$msiFile = Get-ChildItem -Path "$AssetsDir" -Filter "*x64*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($msiFile) {
-    $msiHash = (Get-FileHash -Path $msiFile.FullName -Algorithm SHA256).Hash.ToLower()
-}
-$x64File = Get-ChildItem -Path "$AssetsDir" -Filter "*x64*.exe" -Exclude "*Setup*" -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($x64File) {
-    $x64Hash = (Get-FileHash -Path $x64File.FullName -Algorithm SHA256).Hash.ToLower()
-}
-$arm64File = Get-ChildItem -Path "$AssetsDir" -Filter "*arm64*.exe" -Exclude "*Setup*" -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($arm64File) {
-    $arm64Hash = (Get-FileHash -Path $arm64File.FullName -Algorithm SHA256).Hash.ToLower()
-}
+
+$setupFile = Get-ChildItem -Path $AssetsDir -Filter "*_x64_Setup.exe" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+$zipFile   = Get-ChildItem -Path $AssetsDir -Filter "*_x64_portable.zip" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+
+$setupHash = if ($setupFile) { (Get-FileHash -Path $setupFile.FullName -Algorithm SHA256).Hash.ToLower() } else { "N/A" }
+$zipHash   = if ($zipFile)   { (Get-FileHash -Path $zipFile.FullName   -Algorithm SHA256).Hash.ToLower() } else { "N/A" }
+
+$setupName = if ($setupFile) { $setupFile.Name } else { "DevOpsToolsInstaller_<version>_x64_Setup.exe" }
+$zipName   = if ($zipFile)   { $zipFile.Name }   else { "DevOpsToolsInstaller_<version>_x64_portable.zip" }
 
 if (Test-Path $AssetsDir) {
-    # Generate SHA256SUMS.txt
-    Get-ChildItem -Path "$AssetsDir\*.exe", "$AssetsDir\*.msi" -ErrorAction SilentlyContinue | ForEach-Object {
-        $h = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash.ToLower()
-        "$h  $($_.Name)"
-    } | Out-File -FilePath "$AssetsDir\SHA256SUMS.txt" -Encoding utf8
+    $sums = @()
+    foreach ($f in (Get-ChildItem -Path $AssetsDir -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Name -ne "SHA256SUMS.txt" -and $_.Extension -in ".exe", ".zip", ".msi" })) {
+        $h = (Get-FileHash -Path $f.FullName -Algorithm SHA256).Hash.ToLower()
+        $sums += "$h  $($f.Name)"
+    }
+    if ($sums.Count -gt 0) {
+        # LF, no BOM: the app hashes catalog files byte-for-byte, and this file is
+        # published next to them.
+        [System.IO.File]::WriteAllText("$AssetsDir\SHA256SUMS.txt", ($sums -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+        Write-Host "Wrote SHA256SUMS.txt ($($sums.Count) entries)"
+    }
 }
 
 $template = @'
-# 🚀 DevOps Tools Installer __TAG__ Stable Release
+# DevOps Tools Installer __TAG__
 
-Welcome to the **__TAG__** milestone release of **DevOps Tools Installer**!
-This release introduces a **security-first architecture** with cryptographic catalog signing and Authenticode verification policies, full **Headless CLI automation** for terminal workflows, **System Tray minimization with background toast notifications**, native **WinUI 3 CommandBars** with fluent theme alignment, and modernized **Windows 11 setup wizard experiences**.
-
----
-
-### ✨ Major Features & What's New in __TAG__
-
-#### 🛡️ Enterprise Security & Integrity Hardening
-- **ECDSA P-256 Signed Catalog & Fail-Closed Trust**: All remote catalog updates (`catalog.json` and `bundles.json`) are cryptographically verified using publisher-pinned ECDSA P-256 public keys (`CatalogSignatureService`), protecting against MITM attacks and mirror tampering.
-- **Authenticode Signature Policy**: Added configurable signature verification policies in Settings (`WarnUnsigned` / `BlockUnsigned`) to verify digital signatures of downloaded vendor installers before execution.
-- **Persistent Daily Audit Logging**: Complete post-incident traceability with append-only daily audit logs (`audit_YYYY-MM-DD.log`) tracking downloads, verification statuses, and tool launches.
-- **Security-First Transport & Tagging**: Strict HTTPS-only transport enforcement and automatic Windows Mark-of-the-Web (`Zone.Identifier`) tagging on all downloaded artifacts.
-
-#### ⚡ Headless CLI Mode & Automation
-- **Terminal Automation**: Run `DevOpsToolsInstaller.exe` directly from PowerShell, CMD, or CI/CD scripts without launching the graphical UI:
-  - `--list`: Discover all available tools and categories with clear formatting.
-  - `--install <tool1,tool2>`: Non-interactive batch installation of developer tools.
-  - `--install-bundle <bundle-id>`: Provision entire curated stacks (e.g. `k8s-starter`, `aws-devops`).
-  - `--check-updates`: Quick CLI verification for newer application releases.
-
-#### 🔔 System Tray Integration & Background Notifications
-- **System Tray Minimization**: Keeps the installer accessible in the Windows taskbar notification area without cluttering your workspace.
-- **Native Toast Notifications**: Real-time notifications for background download completions, installations, and update availability.
-- **Smart Window Close Handling**: Option in Settings to minimize to the tray instead of terminating when closing the main window.
-
-#### 🎨 Modern UI & Native CommandBar Enhancements
-- **Native WinUI 3 CommandBars**: Replaced custom action bars with native `CommandBar` controls across `CatalogPage`, `DownloadsPage`, `InstalledPage`, and `StacksPage` for consistent Windows 11 styling and responsive action overflows.
-- **Theme & Accent Color Alignment**: Refined `Styles.xaml` to align with Windows accent colors, ensuring high-contrast readability in both Dark and Light themes.
-- **Navigation Performance**: Enabled `NavigationCacheMode` across pages for instant tab switching with zero redraw flicker.
-- **Deduplication & Error Reporting**: Prevent duplicate concurrent downloads and display informative error diagnostics with unhandled exception logging.
-
-#### 📦 Setup Wizard & Installer Polishing
-- **Windows 11 Setup Experience**: Updated Inno Setup wizard with modern high-resolution branding graphics (`wizardlarge.bmp` and `wizardsmall.bmp`).
-- **Process Protection**: Automatically detects and prompts to close active running instances during installation and updates.
-- **Environment & PATH Integration**: Improved PATH variable handling and clean uninstallation routines.
-- **Apache-2.0 License**: Streamlined legal and license notices across the application, installer, and repository.
+__TAG__ of **DevOps Tools Installer** - the fork maintained by [@ayu-haker](https://github.com/ayu-haker).
 
 ---
 
-### 📋 Full Commit Changelog (from v2.5.0 to __TAG__)
+## What's new in this release
 
-- `cc8990f` - **feat**: Revise README and installer setup for clarity and enhanced features
-- `60082e8` - **feat**: Implement catalog signing and verification for enhanced security
-- `6b1288c` - **feat**: Implement security features for installer with signature verification and audit logging
-- `93c7f41` - **feat**: Add wizard images to installer for improved user interface
-- `fbd27c3` - **feat**: Update installer script for enhanced user experience and functionality
-- `73903af` - **feat**: Implement headless CLI mode and system tray functionality
-- `c37e474` - **fix**: Adjust layout dimensions and improve description handling in StacksPage
-- `ec75ee0` - **feat**: Refactor UI components to utilize native CommandBar and improve theme integration
-- `f589058` - **feat**: Enhance error handling and UI improvements across various components
+### Sideload: APKs and local installers
+A new **Sideload** page in the nav, next to Downloads:
+
+- **Android (ADB)**: install an `.apk` onto a connected device, with optional
+  downgrade (`-d`) and grant-all-permissions (`-g`) flags.
+- **Device picker**: lists attached devices and their state (`device` /
+  `offline` / `unauthorized`) from `adb devices`.
+- **Local installers**: pick any `.exe` or `.msi` from disk. The app computes its
+  SHA-256 and checks its Authenticode signature before launching, and the
+  signature verdict respects your Settings policy (`WarnUnsigned` /
+  `BlockUnsigned`).
+- **adb discovery**: prefers the `adb` the app installed itself, falls back to
+  one already on `PATH`, and links straight to the catalog entry if it is
+  missing.
+
+### Catalog signing moved to this fork
+The catalog (`catalog.json`, `bundles.json`) and bundles are now signed and
+served from this repository, so remote catalog updates verify against a key
+pinned in the app rather than against the upstream publisher's key.
+
+### New catalog entries
+`adb` (Android Debug Bridge 37.0.1) and `scrcpy` 4.1, in a new
+**Mobile & Android** category and a new `android-sideload-kit` bundle.
+
+### This fork's identity
+About and Settings now point at this repository and its maintainer. In-app
+update checks resolve against this fork instead of upstream.
 
 ---
 
-### 📦 Verification & Checksums
+## Verification & checksums
 
-| Asset | Type | SHA256 Hash |
+| Asset | Type | SHA256 |
 | :--- | :--- | :--- |
-| **`DevOpsToolsInstaller_x64_Setup.exe`** | Windows Setup Wizard | `__SETUP_HASH__` |
-| **`DevOpsToolsInstaller_x64.msi`** | Windows Installer (.msi) | `__MSI_HASH__` |
-| **`DevOpsToolsInstaller_x64.exe`** | Portable Single Binary | `__X64_HASH__` |
-| **`DevOpsToolsInstaller_arm64.exe`** | Portable Single Binary | `__ARM64_HASH__` |
+| **`__SETUP_NAME__`** | Inno Setup installer | `__SETUP_HASH__` |
+| **`__ZIP_NAME__`** | Portable folder build (zip) | `__ZIP_HASH__` |
 
-*(All asset checksums are also downloadable in `SHA256SUMS.txt`)*
+The same checksums are in `SHA256SUMS.txt`.
 
 ---
 
-### 🚀 Quick Start
-- **Option A (WinGet)**:
-  ```powershell
-  winget install NotHarshhaa.DevOpsToolsInstaller
-  ```
-- **Option B (Setup Wizard)**: Download and run `DevOpsToolsInstaller_x64_Setup.exe` to install to `C:\Program Files\DevOpsToolsInstaller` with automated shortcuts and PATH integration.
-- **Option C (Windows Installer Package)**: Download and run `DevOpsToolsInstaller_x64.msi` for enterprise GPO, Intune, SCCM, or silent rollouts (`msiexec /i DevOpsToolsInstaller_x64.msi /qn`).
-- **Option D (Portable)**: Download `DevOpsToolsInstaller_x64.exe` (or `_arm64.exe`) and run directly — no installation required.
+## Quick start
+
+- **Option A (Setup Wizard)** - download and run `__SETUP_NAME__`. Installs to
+  `C:\Program Files\DevOpsToolsInstaller` with shortcuts and PATH integration.
+- **Option B (Portable)** - download `__ZIP_NAME__`, extract it anywhere, and run
+  `DevOpsToolsInstaller.exe`. No installation, no admin rights.
+- **Option C (WinGet)** - the package ID `NotHarshhaa.DevOpsToolsInstaller` in the
+  WinGet community repository still resolves to **upstream**, so it does not yet
+  ship this fork's features. Download the installer above instead.
+
+### x64 only
+WinUI 3 apps cannot be single-file published, so this project ships a folder
+build wrapped in an installer or a zip. There is no standalone `.exe` and no
+`.msi` for this release, and no arm64 build yet.
+
+---
+
+## Not verified on real hardware
+
+APK installation has **not** been exercised against a physical Android device:
+there was no device available during the build. Device discovery, enumeration,
+and adb's error output *were* tested against real adb 37.0.1, so the code path
+up to the install command is verified, but a successful `adb install` is not.
+
+The local `.exe` / `.msi` flow was verified for hashing and signature evaluation
+(SHA-256 grouping, and `Status: Valid` for a Microsoft-signed binary). The
+file-picker round trip was not driven end to end in the UI.
+
+Please report anything that misbehaves on real hardware.
+
+---
+
+## Credits
+
+Originally created by [Harshhaa](https://github.com/NotHarshhaa). This fork
+builds on that work under Apache-2.0.
 '@
 
-$content = $template.Replace("__TAG__", $Tag).Replace("__SETUP_HASH__", $setupHash).Replace("__MSI_HASH__", $msiHash).Replace("__X64_HASH__", $x64Hash).Replace("__ARM64_HASH__", $arm64Hash)
-$outputDir = [System.IO.Path]::GetDirectoryName((Resolve-Path -Path $OutputFile -ErrorAction SilentlyContinue)?.Path ?? (Join-Path $PWD $OutputFile))
-if (-not [string]::IsNullOrWhiteSpace($outputDir) -and -not (Test-Path $outputDir)) {
-    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+$content = $template.Replace("__TAG__", $Tag)
+$content = $content.Replace("__SETUP_NAME__", $setupName)
+$content = $content.Replace("__SETUP_HASH__", $setupHash)
+$content = $content.Replace("__ZIP_NAME__", $zipName)
+$content = $content.Replace("__ZIP_HASH__", $zipHash)
+
+if ([System.IO.Path]::IsPathRooted($OutputFile)) {
+    $resolved = $OutputFile
+} else {
+    $resolved = Join-Path (Get-Location).Path $OutputFile
 }
-[System.IO.File]::WriteAllText($OutputFile, $content, [System.Text.UTF8Encoding]::new($false))
-Write-Host "Generated release notes at $OutputFile"
+$parent = [System.IO.Path]::GetDirectoryName($resolved)
+if ($parent -and -not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+[System.IO.File]::WriteAllText($resolved, $content, [System.Text.UTF8Encoding]::new($false))
+Write-Host "Generated release notes at $resolved"

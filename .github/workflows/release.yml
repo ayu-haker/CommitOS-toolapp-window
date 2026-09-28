@@ -9,7 +9,7 @@ on:
       version:
         description: 'Version tag (e.g., v2.0.0)'
         required: true
-        default: 'v2.8.0'
+        default: 'v2.9.0'
 
 permissions:
   contents: write
@@ -25,9 +25,6 @@ jobs:
           - rid: win-x64
             platform: x64
             arch_name: x64
-          - rid: win-arm64
-            platform: Arm64
-            arch_name: arm64
 
     steps:
       - name: Checkout Code
@@ -38,67 +35,63 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Sign Catalog Files (pinned-key catalog trust)
-        env:
-          CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
-        shell: pwsh
-        run: |
-          if ([string]::IsNullOrWhiteSpace("$env:CATALOG_SIGNING_KEY")) {
-            Write-Host "CATALOG_SIGNING_KEY secret is not set. Catalog will ship unsigned - app versions fall back to the embedded catalog." -ForegroundColor Yellow
-            Write-Host "Generate a key with: openssl ecparam -name prime256v1 -genkey -noout -out catalog-signing-key.pem" -ForegroundColor Gray
-            exit 0
-          }
-          $keyPath = Join-Path $env:RUNNER_TEMP "catalog-signing-key.pem"
-          [IO.File]::WriteAllText($keyPath, "$env:CATALOG_SIGNING_KEY`n")
-          .\catalog\sign-catalog.ps1 -KeyPath $keyPath
-          Remove-Item $keyPath -Force
+      # The catalog is signed by the maintainer and committed together with its
+      # .sig files. Do NOT re-sign here: CatalogSignatureService pins one public
+      # key, so a release signed by any other key would be rejected by the app.
 
       - name: Restore NuGet Packages
         run: dotnet restore src/DevOpsToolsInstaller/DevOpsToolsInstaller.csproj -r ${{ matrix.rid }}
 
-      - name: Publish Single-File Executable
+      # WinUI 3 cannot be single-file published: the app fails at startup with
+      # "ClassFactory cannot supply requested class" because the Windows App SDK
+      # bootstrapper must be able to resolve its neighbouring runtime files.
+      # Publish a folder and ship it as a zip / installer instead.
+      - name: Publish Folder Build
         run: |
-          dotnet publish src/DevOpsToolsInstaller/DevOpsToolsInstaller.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:WindowsAppSDKSelfContained=true -p:EnableCompressionInSingleFile=true -p:Platform=${{ matrix.platform }} -o publish_out
+          dotnet publish src/DevOpsToolsInstaller/DevOpsToolsInstaller.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:WindowsAppSDKSelfContained=true -p:Platform=${{ matrix.platform }} -o publish_out
 
-      - name: Rename Executable
+      - name: Resolve Version
+        id: ver
         shell: pwsh
         run: |
-          Copy-Item -Path "publish_out\DevOpsToolsInstaller.exe" -Destination "publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}.exe"
+          $ver = "0.0.0"
+          if ("$env:GITHUB_REF_NAME" -match '^v?(\d+\.\d+\.\d+)') { $ver = $Matches[1] }
+          "version=$ver" >> $env:GITHUB_OUTPUT
+          Write-Host "Building version $ver"
 
-      - name: Build Windows Setup Wizard (x64)
-        if: matrix.arch_name == 'x64'
+      - name: Package Portable Zip
         shell: pwsh
         run: |
-          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          $ver = "${{ steps.ver.outputs.version }}"
+          $staging = "DevOpsToolsInstaller_v${ver}_${{ matrix.arch_name }}_portable"
+          if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
+          New-Item -ItemType Directory -Path $staging | Out-Null
+          Copy-Item -Path "publish_out\*" -Destination $staging -Recurse -Force
+          Compress-Archive -Path "$staging\*" -DestinationPath "publish_out\DevOpsToolsInstaller_v${ver}_${{ matrix.arch_name }}_portable.zip" -CompressionLevel Optimal
+          Remove-Item $staging -Recurse -Force
+
+      - name: Build Windows Setup Wizard
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) {
             $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
+          }
+          if (-not $iscc -or -not (Test-Path $iscc)) {
+            Write-Host "Inno Setup 6 (ISCC.exe) not found on this runner." -ForegroundColor Red
+            Write-Host "Install it with: choco install innosetup --version=6.3.1" -ForegroundColor Gray
+            exit 1
           }
           Write-Host "Compiling Inno Setup wizard with $iscc..."
           $sourceDir = (Resolve-Path "publish_out").Path
           if (-not (Test-Path "dist")) { New-Item -ItemType Directory -Path "dist" -Force | Out-Null }
           $outDir = (Resolve-Path "dist").Path
-          & $iscc "/DSourceDir=$sourceDir" "/DOutputDir=$outDir" "/DOutputBaseFilename=DevOpsToolsInstaller_x64_Setup" "installer/setup.iss"
-          Move-Item -Path "dist\DevOpsToolsInstaller_x64_Setup.exe" -Destination "publish_out\" -Force
+          & $iscc "/DSourceDir=$sourceDir" "/DOutputDir=$outDir" "/DAppVersion=${{ steps.ver.outputs.version }}" "installer/setup.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $ver = "${{ steps.ver.outputs.version }}"
+          Move-Item -Path "dist\DevOpsToolsInstaller_v${ver}_x64_Setup.exe" -Destination "publish_out\" -Force
 
-      - name: Build Windows Installer (.msi) (x64)
-        if: matrix.arch_name == 'x64'
-        shell: pwsh
-        run: |
-          Write-Host "Installing WiX Toolset v5..."
-          dotnet tool install --global wix --version 5.0.2
-          wix extension add -g WixToolset.UI.wixext/5.0.2
-
-          $ver = "2.8.0"
-          if ($env:GITHUB_REF_NAME -match '^v?(\d+\.\d+\.\d+)') {
-            $ver = $Matches[1]
-          }
-
-          Write-Host "Compiling WiX .msi package (v$ver)..."
-          $sourceDir = (Resolve-Path "publish_out").Path
-          $assetsDir = (Resolve-Path "src/DevOpsToolsInstaller/Assets").Path
-          wix build "installer/setup.wxs" -ext WixToolset.UI.wixext -arch x64 -d "SourceDir=$sourceDir" -d "AssetsDir=$assetsDir" -d "AppVersion=$ver" -o "publish_out/DevOpsToolsInstaller_x64.msi"
-
-      - name: Sign Binaries, Setup Wizard & MSI (Authenticode)
+      - name: Sign Binaries & Installer (Authenticode)
         shell: pwsh
         env:
           SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
@@ -108,37 +101,23 @@ jobs:
             Write-Host "SIGNING_CERTIFICATE secret is not set. Binaries will not be code-signed." -ForegroundColor Yellow
             Write-Host "To enable code signing, add base64-encoded PFX to repository secret 'SIGNING_CERTIFICATE'." -ForegroundColor Gray
           } else {
-            $toSign = @("publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}.exe")
-            if (Test-Path "publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}_Setup.exe") {
-              $toSign += "publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}_Setup.exe"
-            }
-            if (Test-Path "publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}.msi") {
-              $toSign += "publish_out\DevOpsToolsInstaller_${{ matrix.arch_name }}.msi"
-            }
+            $toSign = @(Get-ChildItem -Path "publish_out\*.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+            if ($toSign.Count -eq 0) { Write-Host "Nothing to sign."; exit 0 }
             .\scripts\sign-binaries.ps1 -Files $toSign -Base64Cert "$env:SIGNING_CERTIFICATE" -Password "$env:SIGNING_PASSWORD"
           }
 
-      - name: Upload Binary Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-${{ matrix.arch_name }}
-          path: publish_out/DevOpsToolsInstaller_${{ matrix.arch_name }}.exe
-          if-no-files-found: error
-
-      - name: Upload Setup Wizard Artifact
-        if: matrix.arch_name == 'x64'
+      - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: setup-${{ matrix.arch_name }}
-          path: publish_out/DevOpsToolsInstaller_${{ matrix.arch_name }}_Setup.exe
+          path: publish_out/DevOpsToolsInstaller_v*_x64_Setup.exe
           if-no-files-found: error
 
-      - name: Upload MSI Artifact
-        if: matrix.arch_name == 'x64'
+      - name: Upload Portable Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: msi-${{ matrix.arch_name }}
-          path: publish_out/DevOpsToolsInstaller_${{ matrix.arch_name }}.msi
+          name: portable-${{ matrix.arch_name }}
+          path: publish_out/DevOpsToolsInstaller_v*_portable.zip
           if-no-files-found: error
 
   release:
@@ -177,13 +156,11 @@ jobs:
           name: Release ${{ steps.get_tag.outputs.tag }}
           body_path: release_notes.md
           files: |
-            release_assets/DevOpsToolsInstaller_x64_Setup.exe
-            release_assets/DevOpsToolsInstaller_x64.msi
-            release_assets/DevOpsToolsInstaller_x64.exe
-            release_assets/DevOpsToolsInstaller_arm64.exe
+            release_assets/DevOpsToolsInstaller_v*_x64_Setup.exe
+            release_assets/DevOpsToolsInstaller_v*_x64_portable.zip
             release_assets/SHA256SUMS.txt
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}

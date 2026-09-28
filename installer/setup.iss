@@ -24,10 +24,10 @@ AppId={{D3V0P5-T00L5-1N5T4LL3R-2026-V2}}
 AppName=DevOps Tools Installer
 AppVersion={#AppVersion}
 AppVerName=DevOps Tools Installer {#AppVersion}
-AppPublisher=NotHarshhaa
-AppPublisherURL=https://github.com/NotHarshhaa/DevOpsToolsInstaller
-AppSupportURL=https://github.com/NotHarshhaa/DevOpsToolsInstaller/issues
-AppUpdatesURL=https://github.com/NotHarshhaa/DevOpsToolsInstaller/releases
+AppPublisher=Ayushman Bosu Roy
+AppPublisherURL=https://github.com/ayu-haker/CommitOS-toolapp-window
+AppSupportURL=https://github.com/ayu-haker/CommitOS-toolapp-window/issues
+AppUpdatesURL=https://github.com/ayu-haker/CommitOS-toolapp-window/releases
 DefaultDirName={autopf}\DevOpsToolsInstaller
 DefaultGroupName=DevOps Tools Installer
 AllowNoIcons=yes
@@ -54,11 +54,11 @@ RestartApplications=no
 ; Setup binary properties (shown in Explorer > Properties and by AV/tooling)
 VersionInfoVersion={#AppVersion}
 VersionInfoProductVersion={#AppVersion}
-VersionInfoCompany=NotHarshhaa
+VersionInfoCompany=Ayushman Bosu Roy
 VersionInfoDescription=Installs DevOps Tools Installer v{#AppVersion}
 VersionInfoProductName=DevOps Tools Installer
 VersionInfoProductTextVersion={#AppVersion}
-VersionInfoCopyright=Apache-2.0 License - https://github.com/NotHarshhaa/DevOpsToolsInstaller
+VersionInfoCopyright=Apache-2.0 License - https://github.com/ayu-haker/CommitOS-toolapp-window
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

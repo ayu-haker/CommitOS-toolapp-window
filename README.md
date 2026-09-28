@@ -412,14 +412,14 @@ DevOpsToolsInstaller includes an integrated, zero-friction updater:
 
 DevOpsToolsInstaller provides official distribution formats available from [GitHub Releases](https://github.com/ayu-haker/CommitOS-toolapp-window/releases/latest):
 
-> **v2.9.0** ships one asset: **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** (Windows x64). Verify it against `SHA256SUMS.txt` after downloading.
+> **v2.9.0** ships two assets, both Windows x64: **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** (setup wizard) and **`DevOpsToolsInstaller_v2.9.0_x64_portable.zip`** (no install). Verify either against `SHA256SUMS.txt` after downloading.
 
 ### ⚡ Option 1: Windows Package Manager (WinGet)
 This fork is **not yet published to WinGet** — that package ID still points at the upstream author's build:
 ```powershell
 winget install --id NotHarshhaa.DevOpsToolsInstaller
 ```
-For **this** fork, use Option 2.
+For **this** fork, use Option 2 or Option 3.
 
 ### 🧙 Option 2: Windows Setup Wizard (Recommended)
 Download **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** from the [releases page](https://github.com/ayu-haker/CommitOS-toolapp-window/releases/tag/v2.9.0):
@@ -428,12 +428,15 @@ Download **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** from the [releases page
 - **Optional PATH registration** and **clean uninstall** with an optional "remove my downloads, tools, and settings" prompt.
 - Fully integrated with Windows Settings (*Installed apps* / *Programs and Features*).
 
-> A **portable single-file** build is *not* offered for this fork: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`), so the setup wizard is the supported distribution format.
+> A **portable single-file** `.exe` is *not* offered: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`). The app must ship as a folder, so portability comes from the zip below rather than from one merged binary.
 
-### 🚀 Option 3: Sideload from the app
+### 📦 Option 3: Portable (no install)
+Download **`DevOpsToolsInstaller_v2.9.0_x64_portable.zip`**, extract it anywhere, and run `DevOpsToolsInstaller.exe`. No installation, no admin rights, no registry or `Program Files` changes. The app keeps its downloads, tools, and settings under `%LOCALAPPDATA%\DevOpsToolsInstaller` either way, so the portable copy and the installed copy share the same data.
+
+### 🚀 Option 4: Sideload from the app
 Once installed, the **Sideload** page pushes APKs to connected Android devices over `adb` and verifies (SHA-256 + Authenticode) then launches local `.exe` / `.msi` installers under your signature policy. `adb` and `scrcpy` are in the catalog under **Mobile & Android**, or grab the **Android Sideload Kit** stack.
 
-### 🖥️ Option 4: Scripted / Headless Provisioning
+### 🖥️ Option 5: Scripted / Headless Provisioning
 The installed executable doubles as a CLI for unattended setups:
 ```powershell
 # Bootstrap a Kubernetes workstation from a provisioning script
@@ -446,7 +449,7 @@ if ($LASTEXITCODE -ne 0) { throw "Workstation provisioning failed" }
 ## Tech Stack
 
 - **Framework**: WinUI 3 via Windows App SDK 1.6 (Mica Alt, CommandBar, InfoBadge, NavigationView)
-- **Runtime**: .NET 8.0 (Self-Contained, Single-File Compressed)
+- **Runtime**: .NET 8.0, self-contained (folder build — WinUI 3 cannot be single-file published)
 - **Architecture**: MVVM with CommunityToolkit.Mvvm
 - **Styling**: Windows 11 Fluent Design — system accent color, Mica Alt backdrop, Segoe Fluent Icons
 - **Security**: Win32 `WinVerifyTrust`, .NET `ECDsa` (P-256) pinned-key catalog verification, SHA-256 integrity pipeline, Mark-of-the-Web tagging
