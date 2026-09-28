@@ -50,7 +50,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                             <TextBlock Text="DevOps Tools Installer" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" />
                             <Border Style="{StaticResource BadgeStyle}" Padding="7,2">
-                                <TextBlock Text="v2.8.0" FontSize="11" FontWeight="SemiBold"
+                                <TextBlock x:Name="VersionText" Text="v…" FontSize="11" FontWeight="SemiBold"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </Border>
                             <Border Style="{StaticResource BadgeStyle}" Padding="7,2">
@@ -162,7 +162,7 @@
                 </Border>
             </StackPanel>
 
-            <!-- Creator & Maintainer Spotlight -->
+            <!-- Maintainer Spotlight -->
             <StackPanel Spacing="8">
                 <TextBlock Text="Creator &amp; Maintainer" Style="{StaticResource CardTitleStyle}" Margin="4,0,0,0" />
                 <Border Style="{StaticResource CardStyle}" Padding="22">
@@ -179,8 +179,8 @@
                                 VerticalAlignment="Center">
                             <controls:PersonPicture
                                 x:Name="AuthorPicture"
-                                DisplayName="HARSHHAA"
-                                Initials="H"
+                                DisplayName="Ayushman Bosu Roy"
+                                Initials="AB"
                                 Width="60"
                                 Height="60" />
                         </Border>
@@ -188,9 +188,9 @@
                         <!-- Author Details -->
                         <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                <TextBlock Text="HARSHHAA" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+                                <TextBlock Text="Ayushman Bosu Roy" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" />
                                 <Border Style="{StaticResource BadgeStyle}" Padding="7,2">
-                                    <TextBlock Text="Lead Maintainer" FontSize="11" FontWeight="SemiBold"
+                                    <TextBlock Text="Fork Maintainer" FontSize="11" FontWeight="SemiBold"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </Border>
                             </StackPanel>
@@ -198,13 +198,17 @@
                             <HyperlinkButton Click="AuthorGitHub_Click" Padding="0" Margin="0,0,0,2">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE774;" FontSize="12" />
-                                    <TextBlock Text="https://github.com/NotHarshhaa" FontSize="13" />
+                                    <TextBlock Text="https://github.com/ayu-haker" FontSize="13" />
                                 </StackPanel>
                             </HyperlinkButton>
 
                             <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       Text="Crafted by HARSHHAA to empower engineers with clean, dependable, and reproducible developer environments on Windows without third-party package manager bloat." />
+                                       Text="Cybersecurity and cloud computing enthusiast, B.Tech Computer Engineering, working at Codec Technologies. Maintains this fork — adding the Sideload workflow, self-signing the catalog, and keeping the Windows DevOps experience clean, dependable, and reproducible." />
+
+                            <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"
+                                       Text="Originally created by Harshhaa — this fork builds on that work under Apache-2.0." />
                         </StackPanel>
 
                         <!-- Action Buttons -->
@@ -212,7 +216,7 @@
                             <Button Click="AuthorGitHub_Click" Padding="14,8">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon Glyph="&#xE77B;" FontSize="13" />
-                                    <TextBlock Text="@NotHarshhaa" FontWeight="SemiBold" />
+                                    <TextBlock Text="@ayu-haker" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Button>
                             <Button Click="ReportIssue_Click" Padding="14,8">
@@ -494,12 +498,32 @@
                         <TextBlock Text="Open Source &amp; Community-Driven" FontWeight="SemiBold" />
                         <TextBlock Text="DevOps Tools Installer is free, open source, and welcoming to contributions. Star the repo, submit tool requests, or propose improvements on GitHub."
                                    Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                            <TextBlock Text="Originally by" Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <HyperlinkButton Click="UpstreamAuthor_Click" Padding="0">
+                                <TextBlock Text="@NotHarshhaa" Style="{StaticResource CaptionTextBlockStyle}" />
+                            </HyperlinkButton>
+                            <TextBlock Text="·" Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <HyperlinkButton Click="UpstreamRepo_Click" Padding="0">
+                                <TextBlock Text="DevOpsToolsInstaller" Style="{StaticResource CaptionTextBlockStyle}" />
+                            </HyperlinkButton>
+                            <TextBlock Text="· Apache-2.0" Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                         <Button Click="Documentation_Click">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <FontIcon Glyph="&#xE897;" FontSize="13" />
                                 <TextBlock Text="Docs" />
+                            </StackPanel>
+                        </Button>
+                        <Button Click="Releases_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE896;" FontSize="13" />
+                                <TextBlock Text="Releases" />
                             </StackPanel>
                         </Button>
                         <Button Click="License_Click">

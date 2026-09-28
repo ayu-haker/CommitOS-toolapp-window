@@ -9,7 +9,7 @@ public static class UpdateCheckerService
 {
     private const string CurrentVersion = "2.9.0";
     private const string GitHubReleasesUrl =
-        "https://api.github.com/repos/NotHarshhaa/DevOpsToolsInstaller/releases/latest";
+        "https://api.github.com/repos/ayu-haker/CommitOS-toolapp-window/releases/latest";
 
     private static readonly HttpClient Http;
 

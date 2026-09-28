@@ -25,6 +25,8 @@ public sealed partial class HomePage : Page
 
     private async void HomePage_Loaded(object sender, RoutedEventArgs e)
     {
+        VersionBadgeText.Text = $"v{AppUpdaterService.CurrentVersion} • WinUI 3";
+
         var mw = App.MainWindowInstance;
         if (mw is null) return;
 

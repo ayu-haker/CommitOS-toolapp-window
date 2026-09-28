@@ -21,6 +21,8 @@ public sealed partial class SettingsPage : Page
 
     private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
+        VersionBadgeText.Text = $"v{AppUpdaterService.CurrentVersion}";
+
         var dlFolder = DownloadService.DefaultDownloadsFolder;
         DownloadPathText.Text = dlFolder;
         ToolsPathText.Text = ArtifactService.BinFolder;
@@ -273,12 +275,12 @@ public sealed partial class SettingsPage : Page
 
     private void GitHub_Click(object sender, RoutedEventArgs e)
     {
-        LauncherService.OpenUrl("https://github.com/NotHarshhaa/DevOpsToolsInstaller");
+        LauncherService.OpenUrl("https://github.com/ayu-haker/CommitOS-toolapp-window");
     }
 
     private void AuthorGitHub_Click(object sender, RoutedEventArgs e)
     {
-        LauncherService.OpenUrl("https://github.com/NotHarshhaa");
+        LauncherService.OpenUrl("https://github.com/ayu-haker");
     }
 
     private void ViewAboutPage_Click(object sender, RoutedEventArgs e)

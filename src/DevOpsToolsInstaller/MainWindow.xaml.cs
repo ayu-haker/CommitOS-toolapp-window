@@ -129,6 +129,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        TitleVersionText.Text = $"v{AppUpdaterService.CurrentVersion}";
         Title = "DevOps Tools Installer";
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

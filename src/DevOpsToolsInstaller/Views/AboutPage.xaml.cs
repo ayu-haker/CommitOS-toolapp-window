@@ -7,12 +7,18 @@ namespace DevOpsToolsInstaller.Views;
 
 public sealed partial class AboutPage : Page
 {
-    private const string ToolRepoUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller";
-    private const string AuthorUrl = "https://github.com/NotHarshhaa";
-    private const string IssuesUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller/issues";
-    private const string DocsUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller#readme";
-    private const string LicenseUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller/blob/main/LICENSE";
-    private const string ReleasesUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller/releases";
+    // Every link points at this fork, not the upstream project it derives from.
+    private const string ToolRepoUrl = "https://github.com/ayu-haker/CommitOS-toolapp-window";
+    private const string AuthorUrl = "https://github.com/ayu-haker";
+    private const string IssuesUrl = "https://github.com/ayu-haker/CommitOS-toolapp-window/issues";
+    private const string DocsUrl = "https://github.com/ayu-haker/CommitOS-toolapp-window#readme";
+    private const string LicenseUrl = "https://github.com/ayu-haker/CommitOS-toolapp-window/blob/main/LICENSE";
+    private const string ReleasesUrl = "https://github.com/ayu-haker/CommitOS-toolapp-window/releases";
+
+    // The original project this fork is built on. Apache-2.0 requires the
+    // upstream attribution to be kept, and it is surfaced on the About page.
+    private const string UpstreamRepoUrl = "https://github.com/NotHarshhaa/DevOpsToolsInstaller";
+    private const string UpstreamAuthorUrl = "https://github.com/NotHarshhaa";
 
     public AboutPage()
     {
@@ -24,6 +30,10 @@ public sealed partial class AboutPage : Page
 
     private void AboutPage_Loaded(object sender, RoutedEventArgs e)
     {
+        // Read the version from the updater so this cannot drift from the
+        // assembly again.
+        VersionText.Text = $"v{Services.AppUpdaterService.CurrentVersion}";
+
         OsVersionText.Text = GetFriendlyOsVersion();
         ArchitectureText.Text = $"{System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture} (64-bit Native)";
         RuntimeVersionText.Text = $"{System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription} • WinUI 3";
@@ -73,6 +83,16 @@ public sealed partial class AboutPage : Page
     private async void Releases_Click(object sender, RoutedEventArgs e)
     {
         await Launcher.LaunchUriAsync(new Uri(ReleasesUrl));
+    }
+
+    private async void UpstreamRepo_Click(object sender, RoutedEventArgs e)
+    {
+        await Launcher.LaunchUriAsync(new Uri(UpstreamRepoUrl));
+    }
+
+    private async void UpstreamAuthor_Click(object sender, RoutedEventArgs e)
+    {
+        await Launcher.LaunchUriAsync(new Uri(UpstreamAuthorUrl));
     }
 
     private void CopyDiagnostics_Click(object sender, RoutedEventArgs e)

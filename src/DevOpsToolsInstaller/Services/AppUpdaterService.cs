@@ -39,8 +39,8 @@ public sealed record AppUpdateProgress(
 /// </summary>
 public static class AppUpdaterService
 {
-    public const string GitHubRepoOwner = "NotHarshhaa";
-    public const string GitHubRepoName = "DevOpsToolsInstaller";
+    public const string GitHubRepoOwner = "ayu-haker";
+    public const string GitHubRepoName = "CommitOS-toolapp-window";
     public const string GitHubReleasesPageUrl = $"https://github.com/{GitHubRepoOwner}/{GitHubRepoName}/releases";
     private const string GitHubApiLatestReleaseUrl =
         $"https://api.github.com/repos/{GitHubRepoOwner}/{GitHubRepoName}/releases/latest";
