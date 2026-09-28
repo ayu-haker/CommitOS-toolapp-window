@@ -4,24 +4,31 @@
 > **This repository is a fork/derivative of [NotHarshhaa/DevOpsToolsInstaller](https://github.com/NotHarshhaa/DevOpsToolsInstaller)**, maintained by **ayu-haker** (Ayushman Bosu Roy). All original design, catalog content and code are the work of the upstream author and are used under the **Apache-2.0 License** — see [LICENSE](LICENSE).
 >
 > Changes made in this fork:
+> - **New Sideload page**: install an `.apk` onto a connected Android device over `adb`, and verify (SHA-256 + Authenticode) then launch a local `.exe` / `.msi` under your existing signature policy.
+> - **New "Mobile & Android" catalog category** with `adb` 37.0.1, `scrcpy` 4.1, and an *Android Sideload Kit* stack.
+> - **This fork signs its own catalog.** The app is fail-closed and only trusts a catalog signed by its pinned ECDSA P-256 key, so no new tool could be added without a key. `catalog.json` / `bundles.json` are now signed with this fork's key, the public half is pinned in `CatalogSignatureService`, and the remote URLs point here. The private key is **not** in this repository. Catalog line endings are pinned to LF via `.gitattributes`, because the signature covers the exact committed bytes.
 > - Rebranded application icon and Windows Store / installer assets.
 > - Fixed the remote catalog fetch — upstream requested the `main` branch, but the repository default branch is `master`, so every launch fell back to the embedded catalog. Both branches are now tried.
 > - Assets (catalog, stacks, tool logos) are now embedded and re-materialised on startup, so the app self-heals if its `Assets\` folder is missing.
 > - Removed the broken `-SingleFile` publish target: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`). Use the folder build or the Inno Setup installer instead.
 
 <p align="center">
-  <em>Provision a complete DevOps workstation on Windows in minutes — 90 official tools, curated stacks,<br/>resumable downloads, headless automation, and a security-first pipeline. Zero silent installs, zero bundled binaries, zero telemetry.</em>
+  <em>Provision a complete DevOps workstation on Windows in minutes — 92 official tools, curated stacks,<br/>resumable downloads, headless automation, and a security-first pipeline. Zero silent installs, zero bundled binaries, zero telemetry.</em>
 </p>
 
 <p align="center">
-  <img alt="Release" src="https://img.shields.io/badge/release-v2.8.0-blue?logo=github" />
-  <img alt="Build" src="https://github.com/NotHarshhaa/DevOpsToolsInstaller/actions/workflows/release.yml/badge.svg" />
+  <a href="https://github.com/ayu-haker/CommitOS-toolapp-window/releases/tag/v2.9.0"><img alt="Download v2.9.0" src="https://img.shields.io/badge/download-v2.9.0%20%E2%86%92%20DevOpsToolsInstaller_v2.9.0_x64_Setup.exe-2b579a?style=for-the-badge" /></a>
+</p>
+
+<p align="center">
+  <img alt="Release" src="https://img.shields.io/badge/release-v2.9.0-blue?logo=github" />
+  <img alt="Build" src="https://github.com/ayu-haker/CommitOS-toolapp-window/actions/workflows/release.yml/badge.svg" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows" />
   <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet" />
   <img alt="UI" src="https://img.shields.io/badge/UI-WinUI%203%20%7C%20Mica%20Alt-2b579a" />
   <img alt="CLI" src="https://img.shields.io/badge/headless-CLI%20ready-1F6FEB?logo=windowsterminal" />
   <img alt="Security" src="https://img.shields.io/badge/security-signed%20catalog%20%7C%20HTTPS--only%20%7C%20MOTW-107C41?logo=shield" />
-  <img alt="Arch" src="https://img.shields.io/badge/arch-x64%20%7C%20arm64-lightgrey" />
+  <img alt="Arch" src="https://img.shields.io/badge/arch-x64-lightgrey" />
   <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-green" />
 </p>
 
@@ -41,10 +48,11 @@ A high-performance, native Windows 11 desktop application (WinUI 3 + Mica Alt) d
 | | |
 | :--- | :--- |
 | 🪟 **Truly native Windows 11** | Mica Alt backdrop, Fluent `CommandBar` toolbars, your **own system accent color**, `InfoBadge` update counters, Segoe Fluent Icons — no custom theme hacks. |
-| 📦 **90 official tools, 12 curated stacks** | Direct-from-vendor artifacts with role-based presets (Kubernetes, DevSecOps, Cloud, IaC, Observability, Terminal). |
+| 📦 **92 official tools, 13 curated stacks** | Direct-from-vendor artifacts with role-based presets (Kubernetes, DevSecOps, Cloud, IaC, Observability, Terminal). |
 | ⏯️ **Resumable download engine** | Interrupted transfers (dropped Wi-Fi, cancelled batches) continue via HTTP `Range` from a `.partial` file — large installers like Docker Desktop never restart from zero. |
 | 🛡️ **Security-first pipeline** | HTTPS-only fetches → SHA-256 verification → Authenticode `WinVerifyTrust` with a configurable **Warn / Block** policy → Mark-of-the-Web tagging → on-disk audit log → **cryptographically signed catalog** (fail-closed). |
 | 🖥️ **Headless CLI mode** | `DevOpsToolsInstaller.exe --install kubectl,terraform` for scripts, machine provisioning, and CI — with proper exit codes. |
+| 📱 **Sideload APKs & local installers** | Push an `.apk` to a connected Android device over `adb` (with device-state checks, optional downgrade and permission grants), and pick a local `.exe` / `.msi` to hash, Authenticode-verify, and launch under your signature policy. |
 | 📌 **System tray + update scheduler** | Close-to-tray with quick actions, background tool-update scans every 30 minutes, toast notifications with a Settings toggle. |
 | 🔍 **Zero trust, zero telemetry** | No analytics, no phone-home, no background services. Everything it does is logged locally and inspectable. |
 
@@ -57,7 +65,8 @@ A high-performance, native Windows 11 desktop application (WinUI 3 + Mica Alt) d
 - [How It Works](#how-it-works)
 - [Application Tour & Navigation](#application-tour--navigation)
 - [Headless CLI Mode](#headless-cli-mode)
-- [Tool Categories (90 Tools)](#tool-categories-90-tools)
+- [Sideload: APKs & Local Installers](#sideload-apks--local-installers)
+- [Tool Categories (92 Tools)](#tool-categories-92-tools)
 - [Curated Stacks & Workstation Presets](#curated-stacks--workstation-presets)
 - [What Happens After Download](#what-happens-after-download)
 - [Resumable Download Engine](#resumable-download-engine)
@@ -80,7 +89,7 @@ A high-performance, native Windows 11 desktop application (WinUI 3 + Mica Alt) d
 Setting up a new DevOps workstation usually means the same tedious routine: open a dozen browser tabs, chase down vendor download URLs, verify versions, extract archives, configure PATH variables, and run each setup by hand.
 
 **DevOpsToolsInstaller** unifies this workflow into a single, beautifully designed workstation control plane:
-- Browse an extensible catalog of **90 official developer and DevOps tools**.
+- Browse an extensible catalog of **92 official developer and DevOps tools**.
 - Choose role-based **Curated Stacks** for rapid 1-click provisioning or catalog filtering.
 - Select previous release versions directly from tool cards.
 - Install from a **script or terminal** with headless CLI commands and CI-friendly exit codes.
@@ -103,7 +112,7 @@ Setting up a new DevOps workstation usually means the same tedious routine: open
 ```
 ┌─────────────────────────┐   Signed Catalog (ECDSA P-256)   ┌────────────────────────┐
 │  DevOps Tools Catalog   │  ──────── verified ───────────►  │   Official Artifact    │
-│  (90 Tools / 12 Stacks) │        HTTPS-only fetch          │  (.msi, .exe, .zip)   │
+│  (92 Tools / 13 Stacks) │        HTTPS-only fetch          │  (.msi, .exe, .zip)   │
 └─────────────────────────┘                                  └───────────┬────────────┘
                                                                          │
                                                 Cryptographic Checks     ▼
@@ -132,14 +141,15 @@ The application uses the Windows 11 **Mica Alt** translucent canvas, **your syst
 
 - **🏠 Home (`HomePage`)**: Workstation dashboard with live metrics (installed tools, updates available, active downloads, PATH health), an **Active Downloads** strip with per-tool progress, curated stack cards with install progress, an **Updates Available** section with one-click "Update all", and a Popular & Essential tools list with 1-click install.
 - **📦 Tool Catalog (`CatalogPage`)**:
-  - **90 Cataloged Tools**: Multi-category browsing with official vector SVG logos.
+  - **92 Cataloged Tools**: Multi-category browsing with official vector SVG logos.
   - **Native `CommandBar` toolbar**: Sort, downloaded-only filter, presets, select/clear, profile import/export — with Fluent hover states and automatic overflow.
   - **Multi-Version Selector**: Switch between the latest version or specific previous releases with dynamic URL resolution.
   - **Category Filter Chips + Favorites (★)**: Instant filtering; star preferred tools.
   - **Profile Import & Export**: Export your tool selections to a `.json` profile file to share across teams or restore setups instantly.
   - **Active Stack Banner**: Interactive banner showing current stack filtering with a single-click "Clear Filter" action.
-- **🚀 Curated Stacks (`StacksPage`)**: 12 role-based workstation bundles with live installed-count badges, tool logo previews, **Install Stack** (batch download + navigate to live progress) and **Customize in Catalog** actions.
+- **🚀 Curated Stacks (`StacksPage`)**: 13 role-based workstation bundles with live installed-count badges, tool logo previews, **Install Stack** (batch download + navigate to live progress) and **Customize in Catalog** actions.
 - **📥 Downloads (`DownloadsPage`)**: Concurrent download manager (up to 3 parallel transfers) with live speeds, percentages, Authenticode signature badges, status filter chips, an in-app **Activity & Diagnostic Log**, and post-download action triggers.
+- **📱 Sideload (`SideloadPage`)**: Push an `.apk` to a connected Android device over `adb` (device-state checks, optional `-d` downgrade and `-g` permission grants, adb output shown), and pick a local `.exe` / `.msi` to SHA-256, Authenticode-verify, and launch under your Settings → Security signature policy. See [Sideload](#sideload-apks--local-installers).
 - **🩺 Installed Tools (`InstalledPage`)**:
   - Complete inventory with a native **InfoBadge update counter** on the navigation item.
   - **CLI Health Probing**: Executes binaries (`--version` / `-v`) to measure latency (ms) and verify runtime health.
@@ -166,7 +176,7 @@ Everything the UI does is scriptable. Point it at a fresh machine, a rebuild scr
 
 ```text
 PS> DevOpsToolsInstaller.exe --list
-DevOps Tools Installer v2.8.0 — 90 tools available
+DevOps Tools Installer v2.9.0 — 92 tools available
 
   act                      act                          CI/CD and Version Control
   dagger                   Dagger                       CI/CD and Version Control
@@ -197,9 +207,59 @@ Done. 5 installed, 0 already present, 0 failed.
 
 ---
 
-## Tool Categories (90 Tools)
+## Sideload: APKs & Local Installers
 
-The catalog organizes 90 essential tools across 12 distinct domains:
+The **Sideload** page (left navigation, below *Downloads*) covers two jobs that
+don't fit the "download a vendor tool and install it" flow.
+
+### 📱 Install an APK onto a connected Android device
+
+1. Open **Sideload**. The app locates `adb` for you — the copy installed from the
+   catalog, a standard Android SDK, `ANDROID_HOME` / `ANDROID_SDK_ROOT`, or your
+   `PATH`. If none is found, click **Install adb from the catalog** and it jumps
+   straight to the matching catalog entry.
+2. Plug the device in over USB and accept the **Allow USB debugging** prompt on it.
+   Press the refresh button; the device list shows each device's state, so an
+   unauthorised device is flagged before you try to install to it.
+3. Choose your `.apk` and press **Install to device**.
+
+| Option | adb flag | Use when |
+| :--- | :--- | :--- |
+| *(always on)* | `-r` | Replace an existing install, keeping app data |
+| **Allow downgrade** | `-d` | You are replacing an app with an *older* version |
+| **Grant all runtime permissions** | `-g` | The app needs permissions you'd rather not tap through |
+
+adb's own output is shown, so a failure gives you the real reason
+(`INSTALL_FAILED_VERSION_DOWNGRADE`, `INSTALL_FAILED_INSUFFICIENT_STORAGE`, …)
+instead of a generic error.
+
+> **Why `adb` isn't used from `Tools\bin`:** `adb.exe` only works when
+> `AdbWinApi.dll` and `AdbWinUsbApi.dll` sit beside it, and archive extraction
+> copies only `*.exe` into `Tools\bin` — the copy there does not run. The Sideload
+> page resolves the working location under `Tools\adb\platform-tools\` first.
+
+### 🖥️ Verify and launch a local installer
+
+Pick any `.exe`, `.msi`, or `.msix` already on your PC. The page shows its
+**SHA-256** and its **Authenticode** result as a colour-coded badge, then launches
+it through the normal Windows shell handler — so an `.msi` opens `msiexec`, and a
+vendor UAC prompt is raised when the file needs elevation.
+
+Launching obeys **Settings → Security**:
+
+- **Warn** (default) — launches, logging that the signature was untrusted.
+- **Block unsigned** — refuses to launch a file without a trusted signature.
+
+> [!NOTE]
+> APK installation has not been verified against physical Android hardware — no
+> device was available during development. `adb` discovery, device enumeration and
+> error parsing were exercised against a real `adb` 37.0.1 binary.
+
+---
+
+## Tool Categories (92 Tools)
+
+The catalog organizes 92 tools across 13 distinct domains:
 
 1. **Cloud Provider CLIs**: AWS CLI, Azure CLI, Google Cloud CLI, OCI CLI, AWS SAM CLI, eksctl, Azure Functions Core Tools.
 2. **Containerization & Runtimes**: Docker Desktop, Podman Desktop, Lazydocker, Dive, Kind, Minikube.
@@ -213,6 +273,7 @@ The catalog organizes 90 essential tools across 12 distinct domains:
 10. **Monitoring & Observability**: Prometheus, Grafana, k6 (load testing), Vector, LogCLI.
 11. **Developer Editors & Terminals**: Visual Studio Code, Windows Terminal, PyCharm Community, Cursor, Neovim.
 12. **Core Utilities & Performance**: jq, yq, Postman, curl, HTTPie, Starship, fzf, ripgrep, bat, fd, eza, zoxide, Delta, PuTTY, WinSCP, 7-Zip.
+13. **Mobile & Android**: Android Debug Bridge (`adb`, platform-tools), scrcpy (device mirroring over USB).
 
 *(Full specifications live in [`catalog/catalog.json`](catalog/catalog.json).)*
 
@@ -220,7 +281,7 @@ The catalog organizes 90 essential tools across 12 distinct domains:
 
 ## Curated Stacks & Workstation Presets
 
-The **Curated Stacks** section offers 12 opinionated, battle-tested bundles designed to provision a machine for specific engineering disciplines:
+The **Curated Stacks** section offers 13 opinionated, battle-tested bundles designed to provision a machine for specific engineering disciplines:
 
 | Stack | Description | Core Tools Included |
 | :--- | :--- | :--- |
@@ -236,6 +297,7 @@ The **Curated Stacks** section offers 12 opinionated, battle-tested bundles desi
 | **Container Essentials** | Container build, debug, and vulnerability inspection | `docker-desktop`, `lazydocker`, `dive`, `trivy`, `cosign`, `syft` |
 | **Developer Workstation** | Complete one-click bootstrap for a fresh developer machine | `git`, `github-cli`, `vscode`, `docker-desktop`, `kubectl`, `helm`, `terraform`, `jq`, `postman`, `windows-terminal`, `starship` |
 | **Networking & Service Mesh** | Secure ingress tunneling and service-to-service networking | `ngrok`, `cloudflared`, `linkerd`, `istioctl`, `cilium-cli` |
+| **Android Sideload Kit** | Everything needed to sideload APKs to a phone over USB | `adb`, `scrcpy` |
 
 ### Dual-Action Workflow
 - **Install Stack**: Queues and batch-downloads every tool in the stack (skipping anything already installed) and jumps you to live progress.
@@ -348,29 +410,31 @@ DevOpsToolsInstaller includes an integrated, zero-friction updater:
 
 ## Installation & Deployment Options
 
-DevOpsToolsInstaller provides official distribution formats available from [GitHub Releases](https://github.com/NotHarshhaa/DevOpsToolsInstaller/releases/latest):
+DevOpsToolsInstaller provides official distribution formats available from [GitHub Releases](https://github.com/ayu-haker/CommitOS-toolapp-window/releases/latest):
+
+> **v2.9.0** ships one asset: **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** (Windows x64). Verify it against `SHA256SUMS.txt` after downloading.
 
 ### ⚡ Option 1: Windows Package Manager (WinGet)
-Install directly from your terminal using native Windows Package Manager:
+This fork is **not yet published to WinGet** — that package ID still points at the upstream author's build:
 ```powershell
-winget install DevOpsToolsInstaller
+winget install --id NotHarshhaa.DevOpsToolsInstaller
 ```
-*(or explicitly by package ID: `winget install --id NotHarshhaa.DevOpsToolsInstaller`)*
+For **this** fork, use Option 2.
 
 ### 🧙 Option 2: Windows Setup Wizard (Recommended)
-Download **`DevOpsToolsInstaller_x64_Setup.exe`**:
+Download **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** from the [releases page](https://github.com/ayu-haker/CommitOS-toolapp-window/releases/tag/v2.9.0):
 - **App-branded Fluent wizard** with custom welcome page and logo.
 - **Running-instance detection**: politely closes a running app (including tray-resident instances) before upgrading.
 - **Optional PATH registration** and **clean uninstall** with an optional "remove my downloads, tools, and settings" prompt.
 - Fully integrated with Windows Settings (*Installed apps* / *Programs and Features*).
 
-### 🚀 Option 3: Portable Single-File Executable
-Download **`DevOpsToolsInstaller_x64.exe`** (or `_arm64.exe` for ARM64 devices):
-- Single self-contained executable with embedded compression.
-- Completely portable: drop it onto a USB drive, `Downloads`, or `Desktop` and launch immediately with zero installation.
+> A **portable single-file** build is *not* offered for this fork: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`), so the setup wizard is the supported distribution format.
+
+### 🚀 Option 3: Sideload from the app
+Once installed, the **Sideload** page pushes APKs to connected Android devices over `adb` and verifies (SHA-256 + Authenticode) then launches local `.exe` / `.msi` installers under your signature policy. `adb` and `scrcpy` are in the catalog under **Mobile & Android**, or grab the **Android Sideload Kit** stack.
 
 ### 🖥️ Option 4: Scripted / Headless Provisioning
-The portable executable doubles as a CLI for unattended setups:
+The installed executable doubles as a CLI for unattended setups:
 ```powershell
 # Bootstrap a Kubernetes workstation from a provisioning script
 .\DevOpsToolsInstaller.exe --install-bundle k8s-starter --install docker-desktop,vscode
