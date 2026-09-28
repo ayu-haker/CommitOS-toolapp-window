@@ -63,3 +63,7 @@ release_assets/
 # Catalog signing private key — NEVER commit
 catalog/keys/
 *.pem
+
+# Logo working files — originals live in git history, previews are scratch
+assets/logo-backup/
+assets/new-logo/preview/

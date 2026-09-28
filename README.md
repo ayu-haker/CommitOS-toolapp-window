@@ -1,5 +1,14 @@
 # DevOpsToolsInstaller
 
+> [!NOTE]
+> **This repository is a fork/derivative of [NotHarshhaa/DevOpsToolsInstaller](https://github.com/NotHarshhaa/DevOpsToolsInstaller)**, maintained by **ayu-haker** (Ayushman Bosu Roy). All original design, catalog content and code are the work of the upstream author and are used under the **Apache-2.0 License** — see [LICENSE](LICENSE).
+>
+> Changes made in this fork:
+> - Rebranded application icon and Windows Store / installer assets.
+> - Fixed the remote catalog fetch — upstream requested the `main` branch, but the repository default branch is `master`, so every launch fell back to the embedded catalog. Both branches are now tried.
+> - Assets (catalog, stacks, tool logos) are now embedded and re-materialised on startup, so the app self-heals if its `Assets\` folder is missing.
+> - Removed the broken `-SingleFile` publish target: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`). Use the folder build or the Inno Setup installer instead.
+
 <p align="center">
   <em>Provision a complete DevOps workstation on Windows in minutes — 90 official tools, curated stacks,<br/>resumable downloads, headless automation, and a security-first pipeline. Zero silent installs, zero bundled binaries, zero telemetry.</em>
 </p>

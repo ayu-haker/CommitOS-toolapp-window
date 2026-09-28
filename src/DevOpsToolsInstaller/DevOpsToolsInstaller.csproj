@@ -51,6 +51,16 @@
   </ItemGroup>
 
   <!-- ── Content assets ───────────────────────────────────────────────── -->
+  <!--
+    These are emitted twice on purpose:
+      * Content  -> sits next to the .exe for normal (multi-file) builds.
+      * EmbeddedResource -> merged INTO the .exe by a single-file publish, then
+        written back to disk at startup by AssetExtractor. Without this, a
+        single-file build ships with no catalog and no logos, and the app is
+        empty whenever the signed remote catalog cannot be fetched.
+    Resource names use "__" as the path separator because "." is common inside
+    file names (e.g. "catalog.json") and cannot be used to delimit segments.
+  -->
   <ItemGroup>
     <Content Include="..\..\catalog\catalog.json">
       <Link>Assets\catalog.json</Link>
@@ -72,6 +82,18 @@
     <Content Include="Assets\logos\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\catalog\catalog.json">
+      <LogicalName>Assets__catalog.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\catalog\bundles.json">
+      <LogicalName>Assets__bundles.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\logos\**\*.svg">
+      <LogicalName>Assets__logos__%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- ── Store icon assets (included when building MSIX) ─────────────── -->

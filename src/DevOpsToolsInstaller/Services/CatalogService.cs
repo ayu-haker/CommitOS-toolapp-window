@@ -7,11 +7,20 @@ namespace DevOpsToolsInstaller.Services;
 
 public sealed class CatalogService
 {
-    private const string RemoteCatalogUrl =
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/catalog.json";
+    // Candidate remote locations, most-preferred first. The upstream default
+    // branch has been both "main" and "master" over this project's life, so
+    // every branch is tried before giving up and using the embedded copy.
+    private static readonly string[] RemoteCatalogUrls =
+    {
+        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/catalog.json",
+        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/master/catalog/catalog.json"
+    };
 
-    private const string RemoteBundlesUrl =
-        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/bundles.json";
+    private static readonly string[] RemoteBundlesUrls =
+    {
+        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/main/catalog/bundles.json",
+        "https://raw.githubusercontent.com/NotHarshhaa/DevOpsToolsInstaller/master/catalog/bundles.json"
+    };
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -37,27 +46,33 @@ public sealed class CatalogService
     /// </summary>
     public async Task<List<ToolDefinition>> LoadCatalogAsync(CancellationToken ct = default)
     {
-        // 1. Try remote (signature-verified)
-        try
+        // 1. Try each remote location (signature-verified)
+        foreach (var url in RemoteCatalogUrls)
         {
-            var json = await Http.GetStringAsync(RemoteCatalogUrl, ct);
-            if (await VerifyRemoteSignatureAsync(RemoteCatalogUrl, json, ct))
+            string json;
+            try
             {
-                var tools = JsonSerializer.Deserialize<List<ToolDefinition>>(json, JsonOptions);
-                if (tools is { Count: > 0 })
-                    return tools;
+                json = await Http.GetStringAsync(url, ct);
             }
-            else
+            catch
+            {
+                continue;
+            }
+
+            if (!await VerifyRemoteSignatureAsync(url, json, ct))
             {
                 ActivityLogService.Warn(
-                    "Catalog", "Remote catalog signature missing or invalid — using the built-in catalog.");
+                    "Catalog", $"Remote catalog at {url} is unsigned or the signature is invalid — skipping.");
+                continue;
             }
+
+            var tools = JsonSerializer.Deserialize<List<ToolDefinition>>(json, JsonOptions);
+            if (tools is { Count: > 0 })
+                return tools;
         }
-        catch
-        {
-            ActivityLogService.Info(
-                "Catalog", "Remote catalog unreachable — using the built-in catalog.");
-        }
+
+        ActivityLogService.Info(
+            "Catalog", "No signed remote catalog available — using the built-in catalog.");
 
         // 2. Embedded fallback (baked into the app at build time)
         return LoadEmbeddedCatalog();
@@ -68,27 +83,33 @@ public sealed class CatalogService
     /// </summary>
     public async Task<List<ToolBundle>> LoadBundlesAsync(CancellationToken ct = default)
     {
-        // 1. Try remote (signature-verified)
-        try
+        // 1. Try each remote location (signature-verified)
+        foreach (var url in RemoteBundlesUrls)
         {
-            var json = await Http.GetStringAsync(RemoteBundlesUrl, ct);
-            if (await VerifyRemoteSignatureAsync(RemoteBundlesUrl, json, ct))
+            string json;
+            try
             {
-                var bundles = JsonSerializer.Deserialize<List<ToolBundle>>(json, JsonOptions);
-                if (bundles is { Count: > 0 })
-                    return bundles;
+                json = await Http.GetStringAsync(url, ct);
             }
-            else
+            catch
+            {
+                continue;
+            }
+
+            if (!await VerifyRemoteSignatureAsync(url, json, ct))
             {
                 ActivityLogService.Warn(
-                    "Catalog", "Remote bundles signature missing or invalid — using the built-in stacks.");
+                    "Catalog", $"Remote bundles at {url} are unsigned or the signature is invalid — skipping.");
+                continue;
             }
+
+            var bundles = JsonSerializer.Deserialize<List<ToolBundle>>(json, JsonOptions);
+            if (bundles is { Count: > 0 })
+                return bundles;
         }
-        catch
-        {
-            ActivityLogService.Info(
-                "Catalog", "Remote bundles unreachable — using the built-in stacks.");
-        }
+
+        ActivityLogService.Info(
+            "Catalog", "No signed remote stacks available — using the built-in stacks.");
 
         // 2. Embedded fallback (baked into the app at build time)
         return LoadEmbeddedBundles();

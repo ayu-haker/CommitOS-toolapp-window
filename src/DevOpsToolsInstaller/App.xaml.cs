@@ -29,6 +29,10 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        // A single-file publish has no Assets\ folder on disk. Restore it
+        // before anything reads the catalog, bundles or tool logos.
+        AssetExtractor.EnsureAssetsExtracted();
+
         // Capture the UI thread's dispatcher so background work (download
         // progress) can marshal PropertyChanged back onto the UI thread.
         UiDispatcher.Queue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
