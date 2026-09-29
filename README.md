@@ -1,16 +1,20 @@
 # DevOpsToolsInstaller
 
-> [!NOTE]
-> **This repository is a fork/derivative of [NotHarshhaa/DevOpsToolsInstaller](https://github.com/NotHarshhaa/DevOpsToolsInstaller)**, maintained by **ayu-haker** (Ayushman Bosu Roy). All original design, catalog content and code are the work of the upstream author and are used under the **Apache-2.0 License** — see [LICENSE](LICENSE).
+> [!IMPORTANT]
+> **DevOpsToolsInstaller is maintained by [ayu-haker](https://github.com/ayu-haker) (Ayushman Bosu Roy).** Issues and pull requests on this repository are welcome.
 >
-> Changes made in this fork:
+> This project builds on the original work of [Harshhaa](https://github.com/NotHarshhaa) — see [Credits](#credits) and [LICENSE](LICENSE).
+
+> [!TIP]
+> ### What's new here
 > - **New Sideload page**: install an `.apk` onto a connected Android device over `adb`, and verify (SHA-256 + Authenticode) then launch a local `.exe` / `.msi` under your existing signature policy.
 > - **New "Mobile & Android" catalog category** with `adb` 37.0.1, `scrcpy` 4.1, and an *Android Sideload Kit* stack.
-> - **This fork signs its own catalog.** The app is fail-closed and only trusts a catalog signed by its pinned ECDSA P-256 key, so no new tool could be added without a key. `catalog.json` / `bundles.json` are now signed with this fork's key, the public half is pinned in `CatalogSignatureService`, and the remote URLs point here. The private key is **not** in this repository. Catalog line endings are pinned to LF via `.gitattributes`, because the signature covers the exact committed bytes.
+> - **The catalog is signed by this project.** The app is fail-closed and only trusts a catalog signed by its pinned ECDSA P-256 key. `catalog.json` / `bundles.json` are signed with this project's key, the public half is pinned in `CatalogSignatureService`, and the remote URLs point here. The private key is **not** in this repository. Catalog line endings are pinned to LF via `.gitattributes`, because the signature covers the exact committed bytes.
 > - Rebranded application icon and Windows Store / installer assets.
-> - Fixed the remote catalog fetch — upstream requested the `main` branch, but the repository default branch is `master`, so every launch fell back to the embedded catalog. Both branches are now tried.
+> - Fixed the remote catalog fetch, which requested the `main` branch while the repository default branch was `master` — every launch fell back to the embedded catalog. Both branches are now tried.
 > - Assets (catalog, stacks, tool logos) are now embedded and re-materialised on startup, so the app self-heals if its `Assets\` folder is missing.
 > - Removed the broken `-SingleFile` publish target: WinUI 3 cannot bootstrap from a merged executable (`ClassFactory cannot supply requested class`). Use the folder build or the Inno Setup installer instead.
+> - The release pipeline now publishes a working installer. It previously published single-file binaries that could not start.
 
 <p align="center">
   <em>Provision a complete DevOps workstation on Windows in minutes — 92 official tools, curated stacks,<br/>resumable downloads, headless automation, and a security-first pipeline. Zero silent installs, zero bundled binaries, zero telemetry.</em>
@@ -415,11 +419,10 @@ DevOpsToolsInstaller provides official distribution formats available from [GitH
 > **v2.9.0** ships two assets, both Windows x64: **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** (setup wizard) and **`DevOpsToolsInstaller_v2.9.0_x64_portable.zip`** (no install). Verify either against `SHA256SUMS.txt` after downloading.
 
 ### ⚡ Option 1: Windows Package Manager (WinGet)
-This fork is **not yet published to WinGet** — that package ID still points at the upstream author's build:
-```powershell
-winget install --id NotHarshhaa.DevOpsToolsInstaller
-```
-For **this** fork, use Option 2 or Option 3.
+**Not available for this build.** A `DevOpsToolsInstaller` package in the WinGet
+community repository is a separate, independently maintained listing and does not
+deliver the features described here — including the Sideload page and the
+updated catalog. Use Option 2 or Option 3 below to get this build.
 
 ### 🧙 Option 2: Windows Setup Wizard (Recommended)
 Download **`DevOpsToolsInstaller_v2.9.0_x64_Setup.exe`** from the [releases page](https://github.com/ayu-haker/CommitOS-toolapp-window/releases/tag/v2.9.0):
@@ -531,6 +534,18 @@ Contributions are warmly welcomed! Feel free to:
 Please review [CONTRIBUTING.md](CONTRIBUTING.md) before submitting pull requests.
 
 ---
+
+## Credits
+
+This project exists because of the original **DevOpsToolsInstaller** by
+[Harshhaa](https://github.com/NotHarshhaa) — the WinUI 3 application architecture,
+the tool catalog, the signature-verified download pipeline, and the headless CLI
+were all their work. That project is licensed under the Apache-2.0 License, and
+this repository continues under the same terms. See [LICENSE](LICENSE) and
+[NOTICE](NOTICE).
+
+Maintenance, the Sideload feature, the catalog signing, the release pipeline, and
+ongoing work are by [@ayu-haker](https://github.com/ayu-haker).
 
 ## Acknowledgements
 
